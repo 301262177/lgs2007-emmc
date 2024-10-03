@@ -17,6 +17,7 @@
 #echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
 #echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
 #git clone https://github.com/messense/aliyundrive-webdav package/messense
+#git clone https://github.com/linkease/istore.git package/istore
+#git clone https://github.com/linkease/istore-ui.git package/istore-ui
 git clone https://github.com/destan19/OpenAppFilter package/OpenAppFilter
-git clone https://github.com/linkease/istore.git package/istore
-git clone https://github.com/linkease/istore-ui.git package/istore-ui
+
