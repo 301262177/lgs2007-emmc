@@ -1,0 +1,147 @@
+#
+# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+# https://github.com/P3TERX/Actions-OpenWrt
+# Description: Build OpenWrt using GitHub Actions
+#
+###############手动修改##############
+name: RAX3000M-eMMC_XR30-eMMC-hanwckf
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      EEPROM:
+        description: 'Use nx30pro eeprom and fixed WiFi MAC address'
+        required: true
+        default: true
+        type: boolean
+      APP_MTK:
+        description: 'Use luci-app-mtk wifi config'
+        required: true
+        default: false
+        type: boolean
+      NO_DOCKERMAN:
+        description: 'Not build luci-app-dockerman'
+        required: true
+        default: false
+        type: boolean
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
+#  schedule:
+#    - cron: 0 16 * * *
+
+env:
+  ###############手动修改##############
+  ##因为是两个设备，所以手动设置上传时候的打包名称和tag名称UPLOAD_TAG_NAME
+  OPENWRT_NAME: hanwckf
+  UPLOAD_TAG_NAME: rax3000m-emmc_xr30-emmc
+  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x
+  REPO_BRANCH: openwrt-21.02
+  FEEDS_CONF: RAX3000M-eMMC_XR30-eMMC-hanwckf/feeds.conf.default
+  RAX3000M_EMMC_DTS_FILE: target/linux/mediatek/files-5.4/arch/arm64/boot/dts/mediatek/mt7981-cmcc-rax3000m-emmc.dts
+  CONFIG_FILE: RAX3000M-eMMC_XR30-eMMC-hanwckf/.2.config
+  DIY_P1_SH: RAX3000M-eMMC_XR30-eMMC-hanwckf/diy-part1.sh
+  DIY_P2_SH: RAX3000M-eMMC_XR30-eMMC-hanwckf/diy-part2.sh
+  SSH_ACTIONS: false
+  UPLOAD_FIRMWARE: true
+  UPLOAD_RELEASE: true
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: write
+    
+    steps:
+    - name: 检查项目分支
+      uses: actions/checkout@main
+      
+    - name: 初始化编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        
+    - name: 清理磁盘空间(Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # when set to "true" but frees about 6 GB
+        tool-cache: true
+        
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: false
+        dotnet: false
+        haskell: false
+        large-packages: false
+        swap-storage: false
+        
+    - name: 下载固件源码
+      working-directory: /workdir
+      run: |
+        df -hT $PWD
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        
+    - name: 加载feeds.conf.default & DIY_P1_SH
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH
+        
+    - name: 更新 & 安装 feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+        
+    - name: 加载config & DIY_P2_SH
+      run: |
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+               
+    - name: 设置RAX3000M-eMMC的eMMC使用highspeed
+      run: |
+        cd openwrt
+        if ! grep -q 'cap-mmc-highspeed' "${{ env.RAX3000M_EMMC_DTS_FILE }}"; then
+                sed -i -e '/bus-width = <8>;/ a\	cap-mmc-highspeed;' "${{ env.RAX3000M_EMMC_DTS_FILE }}"
+        fi
+        
+    - name: 使用nx30pro的高功率eeprom并固定WiFi MAC地址
+      if: github.event.inputs.EEPROM == 'true'
+      run: |
+        cp RAX3000M-eMMC_XR30-eMMC-hanwckf/nx30pro_eeprom.bin openwrt/package/mtk/drivers/mt_wifi/files/mt7981-default-eeprom/MT7981_iPAiLNA_EEPROM.bin
+        cd openwrt
+        ## 创建一个辅助文件。文件内容是写入MAC地址到dat文件，固定wifi MAC地址
+        echo -e "\t\tlocal wifi0_mac=\"\$(mmc_get_mac_binary factory 0x04)\"
+        \t\tsed -i \"/^MacAddress=.*/ {s/.*/MacAddress=\$wifi0_mac/;b;}; \\\$aMacAddress=\$wifi0_mac\" /etc/wireless/mediatek/mt7981.dbdc.b0.dat
+        \t\tlocal wifi1_mac=\"\$(macaddr_setbit_la \$wifi0_mac)\"
+        \t\tsed -i \"/^MacAddress=.*/ {s/.*/MacAddress=\$wifi1_mac/;b;}; \\\$aMacAddress=\$wifi1_mac\" /etc/wireless/mediatek/mt7981.dbdc.b1.dat" > temp_insert.txt
+        ## 将文本内容写入02_network
+        sed -i '/mediatek_setup_macs()/,/\};/ {/cmcc,rax3000m-emmc)/ {n;n;n;r temp_insert.txt
+        }}' target/linux/mediatek/mt7981/base-files/etc/board.d/02_network
+        
+    - name: 使用luci-app-mtk无线配置
+      if: github.event.inputs.APP_MTK == 'true'
+      run: |
+        cd openwrt
+        sed -i 's/CONFIG_PACKAGE_luci-app-mtwifi-cfg=y/CONF
