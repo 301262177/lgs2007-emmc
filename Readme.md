@@ -14,25 +14,6 @@
 - #### 说明
 
 - #### 1. Choose mt_wifi/warp firmware
-默认mt_wifi和warp使用TP XDR6088的fw-20230808，个人使用感觉无线ping丢包较少。  
-mt_wifi：  
-no-new-fw：不使用新的无线firmware，使用mt798x-7.6.6.1-src驱动中的fw-20220906  
-mt7986-fw-20221208：使用mt7986-7.6.7.0-20221209-b9c02f-obj提取的fw-20221208  
-mt7986-fw-jdc：使用JDCOS-JDC04-4.2.0.r4080固件提取的fw-20230228  
-mt7986-fw-20230421：使用mtk-openwrt-feeds(20230421)的fw-20230421  
-mt7986-fw-20230808：使用TP XDR6088的fw-20230808  
-mt7986-fw-20231024：使用mtk-openwrt-feeds(20231024)的fw-20231024  
-warp：  
-no-new-fw：不使用新的无线firmware，使用warp_20221209-3e6ae1-src驱动中的fw-20221208，这个fw和mt7986-7.6.7.0-20221209-b9c02f-obj提取的fw-20221208相同  
-mt7986-fw-jdc：使用JDCOS-JDC04-4.2.0.r4080固件提取的fw-20230308  
-mt7986-fw-20230421：使用mtk-openwrt-feeds(20230421)的fw-20230421  
-mt7986-fw-20230808：使用TP XDR6088的fw-20230808  
-mt7986-fw-20231024：使用mtk-openwrt-feeds(20231024)的fw-20231024  
-
-.mtwifi-cfg.config配置文件中已设置使用新的无线firmware：  
-CONFIG_MTK_MT7986_NEW_FW=y  
-CONFIG_WARP_NEW_FW=y   
-  
 
 - #### 2. Not build luci-app-dockerman
 该选项默认关闭，即按.mtwifi-cfg.config配置文件编译dockerman，不需要编译dockerman请打钩。  
