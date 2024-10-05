@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 ###############手动修改##############
-name: RAX3000M-eMMC-padawanoniy-simplify
+name: General-padavanonly
 
 on:
   repository_dispatch:
@@ -39,8 +39,8 @@ on:
 env:
   ###############手动修改##############
   ##因为是两个设备，所以手动设置上传时候的打包名称和tag名称UPLOAD_TAG_NAME
-  OPENWRT_NAME: simplify
-  UPLOAD_TAG_NAME: RAX3000M-eMMC-padawanoniy-simplify
+  OPENWRT_NAME: General
+  UPLOAD_TAG_NAME: General-padawanoniy-simplify
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x
   REPO_BRANCH: openwrt-21.02
   FEEDS_CONF: RAX3000M-eMMC_XR30-eMMC-hanwckf/feeds.conf.default
