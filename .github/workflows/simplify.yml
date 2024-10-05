@@ -11,6 +11,11 @@
 name: simplify
 
 on:
+  #自动编译：每周早上4点
+  schedule:
+    - cron: 0 20 * * 0
+
+on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
