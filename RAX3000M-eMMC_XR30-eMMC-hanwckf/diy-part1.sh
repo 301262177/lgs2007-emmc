@@ -23,3 +23,6 @@
 #git clone https://github.com/linkease/istore.git package/istore
 #git clone https://github.com/linkease/istore-ui.git package/istore-ui
 git clone https://github.com/destan19/OpenAppFilter package/OpenAppFilter
+# iStore
+git_sparse_clone main https://github.com/linkease/istore-ui app-store-ui
+git_sparse_clone main https://github.com/linkease/istore luci
