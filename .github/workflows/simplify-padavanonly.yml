@@ -34,9 +34,9 @@ on:
         required: false
         default: 'false'
 
-  on:
-   schedule:
-    - cron: 0 20 * * 0
+
+  # schedule:
+   # - cron: 0 20 * * 0
 
 env:
   ###############手动修改##############
