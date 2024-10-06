@@ -14,12 +14,12 @@
 #sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
 
 # Add a feed source
-echo >> feeds.conf.default
-echo 'src-git nas https://github.com/linkease/nas-packages.git;master' >> feeds.conf.default
-echo 'src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' >> feeds.conf.default
-echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
-echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
-git clone https://github.com/messense/aliyundrive-webdav package/messense
+#echo >> feeds.conf.default
+#echo 'src-git nas https://github.com/linkease/nas-packages.git;master' >> feeds.conf.default
+#echo 'src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' >> feeds.conf.default
+#echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
+#echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
+#git clone https://github.com/messense/aliyundrive-webdav package/messense
 #git clone https://github.com/linkease/istore.git package/istore
 #git clone https://github.com/linkease/istore-ui.git package/istore-ui
 git clone https://github.com/destan19/OpenAppFilter package/OpenAppFilter
